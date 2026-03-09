@@ -82,7 +82,7 @@
             background-color: rgba(0,0,0,0.85);
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: 0;
         }
         .video-modal-content {
             position: relative;
@@ -125,14 +125,20 @@
             border-radius: 0;
         }
         .close-button {
-            position: absolute;
-            top: -35px;
-            right: 0;
+            position: fixed;
+            top: 10px;
+            right: 10px;
             color: white;
-            font-size: 32px;
+            font-size: 28px;
             cursor: pointer;
-            padding: 5px 10px;
             z-index: 1001;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            padding: 0;
         }
 
         /* 自定义进度条 */
@@ -203,8 +209,6 @@
         @media (max-width: 480px) {
             body { padding: 8px; }
             .container { padding: 0 10px; }
-            .close-button { top: -32px; font-size: 28px; }
-            .iframe-wrapper { height: min(92vh, calc(100vw * 9 / 16)); }
         }
         /* 当进入浏览器原生全屏时，确保 modal 和 iframe 占满屏幕并去掉圆角/宽度限制 */
         .in-fullscreen .video-modal {
@@ -363,31 +367,9 @@
                 iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
                 wrapper.appendChild(iframe);
                 iframeContainer.appendChild(wrapper);
-                // 立即设置自适应高度
-                function calcIframeHeight() {
-                    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-                    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-                    // 计算基于宽度的 16:9 高度
-                    const hFromWidth = vw * 9 / 16;
-                    // 限制为视口高度的一定比例，防止溢出
-                    const maxH = vh * 0.92;
-                    return Math.min(hFromWidth, maxH);
-                }
-                wrapper.style.height = calcIframeHeight() + 'px';
                 iframeContainer.style.display = 'block';
-                    // 保存当前活跃媒体元素容器以便全屏切换使用
-                    activeMediaWrapper = wrapper;
-                // 监听尺寸变化，确保横竖屏切换时自适应
-                function updateIframeWrapperHeight() {
-                    try {
-                        const wrappers = iframeContainer.querySelectorAll('.iframe-wrapper');
-                        wrappers.forEach(w => {
-                            w.style.height = calcIframeHeight() + 'px';
-                        });
-                    } catch (e) {}
-                }
-                window.addEventListener('resize', updateIframeWrapperHeight);
-                window.addEventListener('orientationchange', updateIframeWrapperHeight);
+                // 保存当前活跃媒体元素容器以便全屏切换使用
+                activeMediaWrapper = wrapper;
             } else {
                 videoPlayer.style.display = 'none';
                 videoPlayer.pause();
