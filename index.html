@@ -221,7 +221,6 @@
 <div id="videoModal" class="video-modal">
     <div class="video-modal-content">
         <span id="closeButton" class="close-button">&times;</span>
-        <span id="fullscreenButton" class="close-button" style="right:48px;">⤢</span>
         <div id="loadingSpinner" class="loading-spinner" style="display:none;"></div>
         <video id="videoPlayer" playsinline webkit-playsinline preload="none" style="display:none;"></video>
         <img id="imageViewer" style="display:none;" />
@@ -405,31 +404,8 @@
         if (document.msExitFullscreen) return document.msExitFullscreen();
     }
 
-    // 点击自定义全屏按钮时，针对当前活跃媒体发起全屏
+    // 使用 iframe 内置控件进行全屏（不使用自定义全屏按钮）
     let activeMediaWrapper = null;
-    const fullscreenButton = document.getElementById('fullscreenButton');
-    fullscreenButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        // 当 iframe 存在时优先尝试对 iframe 本身发起全屏（移动端兼容性更好），否则对 wrapper 或 video 发起全屏
-        try {
-            if (iframeContainer.style.display === 'block') {
-                const iframeEl = iframeContainer.querySelector('iframe');
-                if (iframeEl) {
-                    // 有些浏览器对跨域 iframe 要求对 iframe 元素本身调用 requestFullscreen
-                    enterFullscreen(iframeEl).catch ? enterFullscreen(iframeEl) : enterFullscreen(activeMediaWrapper || iframeEl);
-                    return;
-                }
-                if (activeMediaWrapper) {
-                    enterFullscreen(activeMediaWrapper);
-                    return;
-                }
-            }
-            if (videoPlayer.style.display === 'block') {
-                enterFullscreen(videoPlayer);
-                return;
-            }
-        } catch (err) {}
-    });
 
     // 当关闭弹窗或点击遮罩时，退出全屏（若在全屏）
     function ensureExitFullscreen() {
