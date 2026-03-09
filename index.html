@@ -253,8 +253,8 @@
         { title: "【视频】小米手机-操作教程 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
         { title: "【视频】华为手机-操作教程 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
         { title: "【视频】三星手机-操作教程 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
-        { title: "【视频】安卓下载歌曲到U盘 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
-        { title: "苹果15-16-17使用教程【视频讲解】 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
+        { title: "【视频】安卓下载歌曲到U盘 (B站嵌入示例)", embed: "//player.bilibili.com/player.html?isOutside=true&aid=379946535&bvid=BV1PZ4y1X7KZ&cid=464585052&p=1", type: "video" },
+        { title: "苹果15-16-17使用教程【视频讲解】 (B站嵌入示例)", embed: "//player.bilibili.com/player.html?isOutside=true&aid=379946535&bvid=BV1PZ4y1X7KZ&cid=464585052&p=1", type: "video" },
         { title: "苹果转接头使用方法 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" }
     ];
 
@@ -329,7 +329,29 @@
                 iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
                 wrapper.appendChild(iframe);
                 iframeContainer.appendChild(wrapper);
+                // 立即设置自适应高度
+                function calcIframeHeight() {
+                    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+                    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+                    // 计算基于宽度的 16:9 高度
+                    const hFromWidth = vw * 9 / 16;
+                    // 限制为视口高度的一定比例，防止溢出
+                    const maxH = vh * 0.92;
+                    return Math.min(hFromWidth, maxH);
+                }
+                wrapper.style.height = calcIframeHeight() + 'px';
                 iframeContainer.style.display = 'block';
+                // 监听尺寸变化，确保横竖屏切换时自适应
+                function updateIframeWrapperHeight() {
+                    try {
+                        const wrappers = iframeContainer.querySelectorAll('.iframe-wrapper');
+                        wrappers.forEach(w => {
+                            w.style.height = calcIframeHeight() + 'px';
+                        });
+                    } catch (e) {}
+                }
+                window.addEventListener('resize', updateIframeWrapperHeight);
+                window.addEventListener('orientationchange', updateIframeWrapperHeight);
             } else {
                 videoPlayer.style.display = 'none';
                 videoPlayer.pause();
