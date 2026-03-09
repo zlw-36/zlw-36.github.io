@@ -104,6 +104,21 @@
             background: #000;
             max-height: 80vh;
         }
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 */
+            max-height: 80vh;
+        }
+        .iframe-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            border-radius: 8px;
+        }
         .close-button {
             position: absolute;
             top: -35px;
@@ -297,8 +312,10 @@
                 videoPlayer.load();
                 progressWrap.style.display = 'none';
                 loadingSpinner.style.display = 'none';
-                // 创建 iframe
+                // 创建 iframe（放入自适应 wrapper，保持 16:9 并受 max-height 限制）
                 iframeContainer.innerHTML = '';
+                const wrapper = document.createElement('div');
+                wrapper.className = 'iframe-wrapper';
                 const iframe = document.createElement('iframe');
                 // 强制使用 https 协议，添加播放权限和引用策略
                 const src = item.embed.startsWith('//') ? ('https:' + item.embed) : item.embed;
@@ -308,8 +325,8 @@
                 iframe.setAttribute('scrolling', 'no');
                 iframe.setAttribute('allow', 'autoplay; fullscreen');
                 iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
-                iframe.style.height = '56vw';
-                iframeContainer.appendChild(iframe);
+                wrapper.appendChild(iframe);
+                iframeContainer.appendChild(wrapper);
                 iframeContainer.style.display = 'block';
             } else {
                 videoPlayer.style.display = 'none';
