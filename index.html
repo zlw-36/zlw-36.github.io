@@ -2,14 +2,18 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>U盘使用说明书</title>
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f0f2f5;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             justify-content: center;
         }
@@ -19,16 +23,16 @@
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 0 20px;
+            padding: 0 15px;
         }
         .header {
             text-align: center;
-            padding: 20px 0;
+            padding: 18px 0;
             border-bottom: 1px solid #e8e8e8;
         }
         .header h1 {
             margin: 0;
-            font-size: 24px;
+            font-size: clamp(18px, 5vw, 24px);
         }
         .header p {
             margin: 5px 0 0;
@@ -37,27 +41,36 @@
         .list-item {
             display: flex;
             align-items: center;
-            padding: 15px 0;
+            padding: 14px 5px;
             border-bottom: 1px solid #e8e8e8;
             cursor: pointer;
+            transition: background-color 0.15s;
+        }
+        .list-item:active {
+            background-color: #f5f5f5;
         }
         .list-item:last-child {
             border-bottom: none;
         }
         .list-item .text {
-            font-size: 16px;
+            font-size: clamp(14px, 3.5vw, 16px);
         }
         .button-link {
             display: block;
             background-color: #007bff;
             color: white;
             text-align: center;
-            padding: 15px;
+            padding: 14px;
             border-radius: 8px;
             text-decoration: none;
-            font-size: 16px;
-            margin: 20px 0;
+            font-size: clamp(14px, 3.5vw, 16px);
+            margin: 15px 0;
         }
+        .button-link:active {
+            background-color: #0056b3;
+        }
+
+        /* 弹窗 */
         .video-modal {
             display: none;
             position: fixed;
@@ -66,26 +79,87 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.85);
             justify-content: center;
             align-items: center;
+            padding: 10px;
         }
         .video-modal-content {
             position: relative;
-            width: 90%;
+            width: 100%;
             max-width: 800px;
         }
-        .video-modal-content video {
+        .video-modal-content video,
+        .video-modal-content img {
             width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
             border-radius: 8px;
+            background: #000;
         }
         .close-button {
             position: absolute;
-            top: -30px;
+            top: -35px;
             right: 0;
             color: white;
-            font-size: 30px;
+            font-size: 32px;
             cursor: pointer;
+            padding: 5px 10px;
+            z-index: 1001;
+        }
+
+        /* 自定义进度条 */
+        .video-progress-wrap {
+            width: 100%;
+            margin-top: 8px;
+        }
+        .video-progress-bar {
+            position: relative;
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 4px;
+            cursor: pointer;
+            touch-action: none;
+        }
+        .video-progress-buffered {
+            position: absolute;
+            height: 100%;
+            background: rgba(255,255,255,0.35);
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        .video-progress-filled {
+            position: absolute;
+            height: 100%;
+            background: #007bff;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        .video-progress-thumb {
+            position: absolute;
+            top: 50%;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        }
+        .video-time {
+            display: flex;
+            justify-content: space-between;
+            color: #ccc;
+            font-size: 12px;
+            margin-top: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .container { padding: 0 10px; }
+            .close-button { top: -32px; font-size: 28px; }
         }
     </style>
 </head>
@@ -98,7 +172,7 @@
     <div id="list-container">
         <!-- Items will be generated by JavaScript -->
     </div>
-    <a href="http://bilibili.com/video/BV1xFNGzzErG?vd_source=fb40159e69bb1fc6aba9995623c763e5&spm_id_from=333.788.player.player_end_recommend_autoplay&trackid=web_related_0.router-related-2481894-flpjl.1773056176092.990" class="button-link" target="_blank">
+    <a href="https://pan.quark.cn/s/825b809d7793" class="button-link" target="_blank">
         以上视频高速播放 (加载慢、卡顿点这个)
     </a>
 </div>
@@ -106,70 +180,158 @@
 <div id="videoModal" class="video-modal">
     <div class="video-modal-content">
         <span id="closeButton" class="close-button">&times;</span>
-        <video id="videoPlayer" controls autoplay></video>
+        <video id="videoPlayer" playsinline webkit-playsinline preload="metadata" style="display:none;"></video>
+        <img id="imageViewer" style="display:none;" />
+        <div id="progressWrap" class="video-progress-wrap" style="display:none;">
+            <div id="progressBar" class="video-progress-bar">
+                <div id="progressBuffered" class="video-progress-buffered"></div>
+                <div id="progressFilled" class="video-progress-filled"></div>
+                <div id="progressThumb" class="video-progress-thumb"></div>
+            </div>
+            <div class="video-time">
+                <span id="timeCurrent">0:00</span>
+                <span id="timeTotal">0:00</span>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
     const items = [
-        "U盘常用-问题解答",
-        "U盘容量-问题解答",
-        "【OPPO/VIVO】手机使用方法",
-        "【华为/小米】手机使用方法",
-        "【OPPO/VIVO】看了视频还是不会操作",
-        "【华为/小米】看了视频还是不会操作",
-        "【视频】VIVO手机-操作教程",
-        "【视频】OPPO手机-操作教程",
-        "【视频】小米手机-操作教程",
-        "【视频】华为手机-操作教程",
-        "【视频】下载音乐视频-操作教程",
-        "苹果15-16-17使用教程【视频教程】"
+        { title: "U盘常用-问题解答", file: "videos/1.U盘常用-问题解答.jpg", type: "image" },
+        { title: "U盘容量-问题解答", file: "videos/2.U盘容量-问题解答.jpg", type: "image" },
+        { title: "【OPPO/VIVO】手机使用方法", file: "videos/3.【OPPO VIVO】手机使用方法.jpg", type: "image" },
+        { title: "【华为/小米】手机使用方法", file: "videos/4.【华为 小米】手机使用方法.jpg", type: "image" },
+        { title: "【OPPO/VIVO】看了视频还是不会操作", file: "videos/5.【OPPO VIVO】看了视频还是不会操作.jpg", type: "image" },
+        { title: "【华为/小米】看了视频还是不会操作", file: "videos/6.【华为 小米】看了视频还是不会操作.jpg", type: "image" },
+        { title: "【视频】VIVO手机-操作教程", file: "videos/vivo手机操作视频.mp4", type: "video" },
+        { title: "【视频】OPPO手机-操作教程", file: "videos/oppo手机操作视频.mp4", type: "video" },
+        { title: "【视频】小米手机-操作教程", file: "videos/小米手机操作视频.mp4", type: "video" },
+        { title: "【视频】华为手机-操作教程", file: "videos/华为手机操作视频.mp4", type: "video" },
+        { title: "【视频】三星手机-操作教程", file: "videos/三星手机操作视频.mp4", type: "video" },
+        { title: "【视频】安卓下载歌曲到U盘", file: "videos/安卓下载歌曲到U盘.mp4", type: "video" },
+        { title: "苹果15-16-17使用教程【视频讲解】", file: "videos/苹果15-16-17使用教程【视频讲解】.mp4", type: "video" },
+        { title: "苹果转接头使用方法", file: "videos/苹果转接头使用方法.mp4", type: "video" }
     ];
 
     const listContainer = document.getElementById('list-container');
+    const videoModal = document.getElementById('videoModal');
+    const videoPlayer = document.getElementById('videoPlayer');
+    const imageViewer = document.getElementById('imageViewer');
+    const closeButton = document.getElementById('closeButton');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+    const progressFilled = document.getElementById('progressFilled');
+    const progressBuffered = document.getElementById('progressBuffered');
+    const progressThumb = document.getElementById('progressThumb');
+    const timeCurrent = document.getElementById('timeCurrent');
+    const timeTotal = document.getElementById('timeTotal');
 
-    items.forEach((item, index) => {
+    function formatTime(sec) {
+        if (isNaN(sec) || sec < 0) return '0:00';
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    // 列表渲染
+    items.forEach((item) => {
         const listItem = document.createElement('div');
         listItem.classList.add('list-item');
-        listItem.dataset.video = `videos/${index + 1}.mp4`;
-        
+
         const text = document.createElement('div');
         text.classList.add('text');
-        
-        if (item.startsWith("【视频】") || item.includes("【视频教程】")) {
-             text.textContent = item;
-        } else {
-             text.textContent = `${index + 1}: ${item}`;
-        }
-
+        text.textContent = item.title;
         listItem.appendChild(text);
         listContainer.appendChild(listItem);
 
         listItem.addEventListener('click', () => {
-            const videoSrc = listItem.dataset.video;
-            const videoModal = document.getElementById('videoModal');
-            const videoPlayer = document.getElementById('videoPlayer');
-            
-            videoPlayer.src = videoSrc;
+            if (item.type === 'video') {
+                imageViewer.style.display = 'none';
+                videoPlayer.style.display = 'block';
+                progressWrap.style.display = 'block';
+                videoPlayer.src = item.file;
+                videoPlayer.play();
+            } else {
+                videoPlayer.style.display = 'none';
+                videoPlayer.pause();
+                progressWrap.style.display = 'none';
+                imageViewer.style.display = 'block';
+                imageViewer.src = item.file;
+            }
             videoModal.style.display = 'flex';
         });
     });
 
-    const videoModal = document.getElementById('videoModal');
-    const closeButton = document.getElementById('closeButton');
-    const videoPlayer = document.getElementById('videoPlayer');
-
-    closeButton.addEventListener('click', () => {
+    // 关闭弹窗
+    function closeModal() {
         videoModal.style.display = 'none';
         videoPlayer.pause();
-        videoPlayer.currentTime = 0;
+        videoPlayer.removeAttribute('src');
+        videoPlayer.load();
+        videoPlayer.style.display = 'none';
+        imageViewer.style.display = 'none';
+        progressWrap.style.display = 'none';
+        progressFilled.style.width = '0%';
+        progressThumb.style.left = '0%';
+        progressBuffered.style.width = '0%';
+        timeCurrent.textContent = '0:00';
+        timeTotal.textContent = '0:00';
+    }
+
+    closeButton.addEventListener('click', closeModal);
+    videoModal.addEventListener('click', (e) => {
+        if (e.target === videoModal) closeModal();
     });
 
-    videoModal.addEventListener('click', (e) => {
-        if (e.target === videoModal) {
-            videoModal.style.display = 'none';
+    // 视频播放时更新进度条
+    videoPlayer.addEventListener('timeupdate', () => {
+        if (!videoPlayer.duration) return;
+        const pct = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+        progressFilled.style.width = pct + '%';
+        progressThumb.style.left = pct + '%';
+        timeCurrent.textContent = formatTime(videoPlayer.currentTime);
+    });
+
+    videoPlayer.addEventListener('loadedmetadata', () => {
+        timeTotal.textContent = formatTime(videoPlayer.duration);
+    });
+
+    // 缓冲进度
+    videoPlayer.addEventListener('progress', () => {
+        if (videoPlayer.buffered.length > 0 && videoPlayer.duration) {
+            const buffEnd = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
+            progressBuffered.style.width = (buffEnd / videoPlayer.duration) * 100 + '%';
+        }
+    });
+
+    // 点击/拖拽进度条跳转（支持鼠标和触摸）
+    let dragging = false;
+
+    function seekTo(e) {
+        const rect = progressBar.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let pct = (clientX - rect.left) / rect.width;
+        pct = Math.max(0, Math.min(1, pct));
+        if (videoPlayer.duration) {
+            videoPlayer.currentTime = pct * videoPlayer.duration;
+        }
+    }
+
+    progressBar.addEventListener('mousedown', (e) => { dragging = true; seekTo(e); });
+    document.addEventListener('mousemove', (e) => { if (dragging) seekTo(e); });
+    document.addEventListener('mouseup', () => { dragging = false; });
+
+    progressBar.addEventListener('touchstart', (e) => { dragging = true; seekTo(e); }, { passive: true });
+    document.addEventListener('touchmove', (e) => { if (dragging) seekTo(e); }, { passive: true });
+    document.addEventListener('touchend', () => { dragging = false; });
+
+    // 点击视频本身切换播放/暂停
+    videoPlayer.addEventListener('click', () => {
+        if (videoPlayer.paused) {
+            videoPlayer.play();
+        } else {
             videoPlayer.pause();
-            videoPlayer.currentTime = 0;
         }
     });
 </script>
