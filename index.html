@@ -324,9 +324,9 @@
                 const src = item.embed.startsWith('//') ? ('https:' + item.embed) : item.embed;
                 iframe.src = src;
                 iframe.className = 'video-iframe';
-                iframe.setAttribute('allowfullscreen', '');
-                iframe.setAttribute('webkitallowfullscreen', '');
-                iframe.setAttribute('mozallowfullscreen', '');
+                iframe.setAttribute('allowfullscreen', 'true');
+                iframe.setAttribute('webkitallowfullscreen', 'true');
+                iframe.setAttribute('mozallowfullscreen', 'true');
                 iframe.setAttribute('scrolling', 'no');
                 iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
                 iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
@@ -410,11 +410,19 @@
     const fullscreenButton = document.getElementById('fullscreenButton');
     fullscreenButton.addEventListener('click', (e) => {
         e.stopPropagation();
-        // 当 iframe 存在时优先全屏 wrapper，否则全屏 video
+        // 当 iframe 存在时优先尝试对 iframe 本身发起全屏（移动端兼容性更好），否则对 wrapper 或 video 发起全屏
         try {
-            if (iframeContainer.style.display === 'block' && activeMediaWrapper) {
-                enterFullscreen(activeMediaWrapper);
-                return;
+            if (iframeContainer.style.display === 'block') {
+                const iframeEl = iframeContainer.querySelector('iframe');
+                if (iframeEl) {
+                    // 有些浏览器对跨域 iframe 要求对 iframe 元素本身调用 requestFullscreen
+                    enterFullscreen(iframeEl).catch ? enterFullscreen(iframeEl) : enterFullscreen(activeMediaWrapper || iframeEl);
+                    return;
+                }
+                if (activeMediaWrapper) {
+                    enterFullscreen(activeMediaWrapper);
+                    return;
+                }
             }
             if (videoPlayer.style.display === 'block') {
                 enterFullscreen(videoPlayer);
