@@ -221,6 +221,7 @@
 <div id="videoModal" class="video-modal">
     <div class="video-modal-content">
         <span id="closeButton" class="close-button">&times;</span>
+        <span id="fullscreenButton" class="close-button" style="right:48px;">⤢</span>
         <div id="loadingSpinner" class="loading-spinner" style="display:none;"></div>
         <video id="videoPlayer" playsinline webkit-playsinline preload="none" style="display:none;"></video>
         <img id="imageViewer" style="display:none;" />
@@ -323,9 +324,11 @@
                 const src = item.embed.startsWith('//') ? ('https:' + item.embed) : item.embed;
                 iframe.src = src;
                 iframe.className = 'video-iframe';
-                iframe.setAttribute('allowfullscreen', 'true');
+                iframe.setAttribute('allowfullscreen', '');
+                iframe.setAttribute('webkitallowfullscreen', '');
+                iframe.setAttribute('mozallowfullscreen', '');
                 iframe.setAttribute('scrolling', 'no');
-                iframe.setAttribute('allow', 'autoplay; fullscreen');
+                iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
                 iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
                 wrapper.appendChild(iframe);
                 iframeContainer.appendChild(wrapper);
@@ -341,6 +344,8 @@
                 }
                 wrapper.style.height = calcIframeHeight() + 'px';
                 iframeContainer.style.display = 'block';
+                    // 保存当前活跃媒体元素容器以便全屏切换使用
+                    activeMediaWrapper = wrapper;
                 // 监听尺寸变化，确保横竖屏切换时自适应
                 function updateIframeWrapperHeight() {
                     try {
@@ -367,6 +372,7 @@
     function closeModal() {
         videoModal.style.display = 'none';
         videoPlayer.pause();
+        ensureExitFullscreen();
         // 移除 src，避免继续下载
         try { videoPlayer.removeAttribute('src'); } catch(e) {}
         videoPlayer.load();
@@ -382,6 +388,46 @@
         progressBuffered.style.width = '0%';
         timeCurrent.textContent = '0:00';
         timeTotal.textContent = '0:00';
+    }
+
+    // 全屏处理：支持标准 API 与厂商前缀
+    function enterFullscreen(el) {
+        if (!el) return;
+        if (el.requestFullscreen) return el.requestFullscreen();
+        if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+        if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
+        if (el.msRequestFullscreen) return el.msRequestFullscreen();
+    }
+    function exitFullscreen() {
+        if (document.exitFullscreen) return document.exitFullscreen();
+        if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+        if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+        if (document.msExitFullscreen) return document.msExitFullscreen();
+    }
+
+    // 点击自定义全屏按钮时，针对当前活跃媒体发起全屏
+    let activeMediaWrapper = null;
+    const fullscreenButton = document.getElementById('fullscreenButton');
+    fullscreenButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // 当 iframe 存在时优先全屏 wrapper，否则全屏 video
+        try {
+            if (iframeContainer.style.display === 'block' && activeMediaWrapper) {
+                enterFullscreen(activeMediaWrapper);
+                return;
+            }
+            if (videoPlayer.style.display === 'block') {
+                enterFullscreen(videoPlayer);
+                return;
+            }
+        } catch (err) {}
+    });
+
+    // 当关闭弹窗或点击遮罩时，退出全屏（若在全屏）
+    function ensureExitFullscreen() {
+        if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+            exitFullscreen();
+        }
     }
 
     closeButton.addEventListener('click', closeModal);
