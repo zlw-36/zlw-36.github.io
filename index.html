@@ -223,6 +223,7 @@
 </div>
 
 <script>
+    const BILIBILI_EMBED = "//player.bilibili.com/player.html?isOutside=true&aid=116198343712041&bvid=BV1a3PXz8EQC&cid=36574922624&p=1";
     const items = [
         { title: "U盘常用-问题解答", file: "videos/1.U盘常用-问题解答.jpg", type: "image" },
         { title: "U盘容量-问题解答", file: "videos/2.U盘容量-问题解答.jpg", type: "image" },
@@ -230,14 +231,14 @@
         { title: "【华为/小米】手机使用方法", file: "videos/4.【华为 小米】手机使用方法.jpg", type: "image" },
         { title: "【OPPO/VIVO】看了视频还是不会操作", file: "videos/5.【OPPO VIVO】看了视频还是不会操作.jpg", type: "image" },
         { title: "【华为/小米】看了视频还是不会操作", file: "videos/6.【华为 小米】看了视频还是不会操作.jpg", type: "image" },
-        { title: "【视频】VIVO手机-操作教程", file: "videos/vivo手机操作视频.mp4", type: "video" },
-        { title: "【视频】OPPO手机-操作教程", file: "videos/oppo手机操作视频.mp4", type: "video" },
-        { title: "【视频】小米手机-操作教程", file: "videos/小米手机操作视频.mp4", type: "video" },
-        { title: "【视频】华为手机-操作教程", file: "videos/华为手机操作视频.mp4", type: "video" },
-        { title: "【视频】三星手机-操作教程", file: "videos/三星手机操作视频.mp4", type: "video" },
-        { title: "【视频】安卓下载歌曲到U盘", file: "videos/安卓下载歌曲到U盘.mp4", type: "video" },
-        { title: "苹果15-16-17使用教程【视频讲解】", file: "videos/苹果15-16-17使用教程【视频讲解】.mp4", type: "video" },
-        { title: "苹果转接头使用方法", file: "videos/苹果转接头使用方法.mp4", type: "video" }
+        { title: "【视频】VIVO手机-操作教程 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
+        { title: "【视频】OPPO手机-操作教程 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
+        { title: "【视频】小米手机-操作教程 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
+        { title: "【视频】华为手机-操作教程 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
+        { title: "【视频】三星手机-操作教程 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
+        { title: "【视频】安卓下载歌曲到U盘 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
+        { title: "苹果15-16-17使用教程【视频讲解】 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" },
+        { title: "苹果转接头使用方法 (B站嵌入示例)", embed: BILIBILI_EMBED, type: "video" }
     ];
 
     const listContainer = document.getElementById('list-container');
