@@ -207,7 +207,7 @@
         @keyframes spin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 
         @media (max-width: 480px) {
-            :root { --mobile-bottom-gap: 68px; }
+            :root { --mobile-bottom-gap: calc(env(safe-area-inset-bottom, 0px) + 12px); }
             body { padding: 8px; }
             .container { padding: 0 10px; }
             .video-modal-content {
