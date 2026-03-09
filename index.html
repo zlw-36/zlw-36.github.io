@@ -221,8 +221,6 @@
 <div id="videoModal" class="video-modal">
     <div class="video-modal-content">
         <span id="closeButton" class="close-button">&times;</span>
-        <span id="openButton" class="close-button" style="right:112px; font-size:14px; padding:6px 8px; display:none;">在新窗口打开</span>
-        <span id="forceFullscreenButton" class="close-button" style="right:48px; font-size:18px; padding:6px 8px; display:none;">⤢</span>
         <div id="loadingSpinner" class="loading-spinner" style="display:none;"></div>
         <video id="videoPlayer" playsinline webkit-playsinline preload="none" style="display:none;"></video>
         <img id="imageViewer" style="display:none;" />
@@ -266,7 +264,6 @@
     const imageViewer = document.getElementById('imageViewer');
     const iframeContainer = document.getElementById('iframeContainer');
     const closeButton = document.getElementById('closeButton');
-    const openButton = document.getElementById('openButton');
     const progressWrap = document.getElementById('progressWrap');
     const progressBar = document.getElementById('progressBar');
     const progressFilled = document.getElementById('progressFilled');
@@ -334,34 +331,6 @@
                 iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
                 wrapper.appendChild(iframe);
                 iframeContainer.appendChild(wrapper);
-                // 显示强制全屏按钮并绑定事件：对 iframe 本身请求全屏，失败时在新窗口打开
-                const forceBtn = document.getElementById('forceFullscreenButton');
-                if (forceBtn) {
-                    forceBtn.style.display = 'block';
-                    forceBtn.onclick = function (ev) {
-                        ev.stopPropagation();
-                        try {
-                            if (iframe.requestFullscreen) return iframe.requestFullscreen();
-                            if (iframe.webkitRequestFullscreen) return iframe.webkitRequestFullscreen();
-                            if (iframe.mozRequestFullScreen) return iframe.mozRequestFullScreen();
-                            if (iframe.msRequestFullscreen) return iframe.msRequestFullscreen();
-                        } catch (e) {}
-                        try { window.open(src, '_blank', 'noopener'); } catch (e) { location.href = src; }
-                    };
-                }
-                // 在无法进入 iframe 全屏时，提供在新窗口/标签页打开的回退方案
-                if (openButton) {
-                    openButton.style.display = 'block';
-                    openButton.onclick = function (ev) {
-                        ev.stopPropagation();
-                        try {
-                            window.open(src, '_blank', 'noopener');
-                        } catch (e) {
-                            // fallback: 设置 location
-                            location.href = src;
-                        }
-                    };
-                }
                 // 立即设置自适应高度
                 function calcIframeHeight() {
                     const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
@@ -411,9 +380,7 @@
         imageViewer.style.display = 'none';
         progressWrap.style.display = 'none';
         loadingSpinner.style.display = 'none';
-        if (openButton) openButton.style.display = 'none';
-        const forceBtnClose = document.getElementById('forceFullscreenButton');
-        if (forceBtnClose) forceBtnClose.style.display = 'none';
+        // no custom buttons to hide
         // 清理 iframe
         try { iframeContainer.innerHTML = ''; iframeContainer.style.display = 'none'; } catch (e) {}
         progressFilled.style.width = '0%';
