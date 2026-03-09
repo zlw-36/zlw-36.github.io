@@ -107,8 +107,9 @@
         .iframe-wrapper {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 */
-            max-height: 80vh;
+            /* 自适应高度：在视口高度与宽度计算的 16:9 之间取最小值，保证不超出屏幕 */
+            height: min(80vh, calc(90vw * 9 / 16));
+            max-height: 92vh;
         }
         .iframe-wrapper iframe {
             position: absolute;
@@ -199,6 +200,7 @@
             body { padding: 8px; }
             .container { padding: 0 10px; }
             .close-button { top: -32px; font-size: 28px; }
+            .iframe-wrapper { height: min(92vh, calc(100vw * 9 / 16)); }
         }
     </style>
 </head>
