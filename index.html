@@ -202,6 +202,34 @@
             .close-button { top: -32px; font-size: 28px; }
             .iframe-wrapper { height: min(92vh, calc(100vw * 9 / 16)); }
         }
+        /* 当进入浏览器原生全屏时，确保 modal 和 iframe 占满屏幕并去掉圆角/宽度限制 */
+        .in-fullscreen .video-modal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            padding: 0 !important;
+            background-color: #000 !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        .in-fullscreen .video-modal-content {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: stretch !important;
+        }
+        .in-fullscreen .iframe-wrapper,
+        .in-fullscreen .iframe-wrapper iframe {
+            height: 100vh !important;
+            max-height: none !important;
+            border-radius: 0 !important;
+            position: static !important;
+        }
     </style>
 </head>
 <body>
@@ -414,6 +442,20 @@
             exitFullscreen();
         }
     }
+
+    // 监听浏览器原生 fullscreen 变化，添加/移除 `in-fullscreen` class，保证 modal/iframe 能铺满屏幕
+    function onFullscreenChange() {
+        const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+        if (fsEl) {
+            document.documentElement.classList.add('in-fullscreen');
+        } else {
+            document.documentElement.classList.remove('in-fullscreen');
+        }
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    document.addEventListener('mozfullscreenchange', onFullscreenChange);
+    document.addEventListener('MSFullscreenChange', onFullscreenChange);
 
     closeButton.addEventListener('click', closeModal);
     videoModal.addEventListener('click', (e) => {
