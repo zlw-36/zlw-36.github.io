@@ -156,6 +156,23 @@
             font-variant-numeric: tabular-nums;
         }
 
+        /* 加载指示器 */
+        .loading-spinner {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.15);
+            border-top-color: rgba(255,255,255,0.9);
+            animation: spin 1s linear infinite;
+            z-index: 1002;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        @keyframes spin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+
         @media (max-width: 480px) {
             body { padding: 8px; }
             .container { padding: 0 10px; }
@@ -180,7 +197,8 @@
 <div id="videoModal" class="video-modal">
     <div class="video-modal-content">
         <span id="closeButton" class="close-button">&times;</span>
-        <video id="videoPlayer" playsinline webkit-playsinline preload="metadata" style="display:none;"></video>
+        <div id="loadingSpinner" class="loading-spinner" style="display:none;"></div>
+        <video id="videoPlayer" playsinline webkit-playsinline preload="none" style="display:none;"></video>
         <img id="imageViewer" style="display:none;" />
         <div id="progressWrap" class="video-progress-wrap" style="display:none;">
             <div id="progressBar" class="video-progress-bar">
@@ -247,11 +265,20 @@
 
         listItem.addEventListener('click', () => {
             if (item.type === 'video') {
+                // 延迟加载：只有点击才设置 src 和 controls
                 imageViewer.style.display = 'none';
                 videoPlayer.style.display = 'block';
                 progressWrap.style.display = 'block';
+                loadingSpinner.style.display = 'block';
+                // 显示控件
+                videoPlayer.controls = true;
+                // 设置 src 并开始加载/播放
                 videoPlayer.src = item.file;
-                videoPlayer.play();
+                // 移除任何上次残留状态
+                videoPlayer.load();
+                videoPlayer.play().catch(() => {
+                    // 某些浏览器需要用户交互才能播放，play() 失败时不阻塞
+                });
             } else {
                 videoPlayer.style.display = 'none';
                 videoPlayer.pause();
@@ -267,11 +294,14 @@
     function closeModal() {
         videoModal.style.display = 'none';
         videoPlayer.pause();
-        videoPlayer.removeAttribute('src');
+        // 移除 src，避免继续下载
+        try { videoPlayer.removeAttribute('src'); } catch(e) {}
         videoPlayer.load();
         videoPlayer.style.display = 'none';
+        videoPlayer.controls = false;
         imageViewer.style.display = 'none';
         progressWrap.style.display = 'none';
+        loadingSpinner.style.display = 'none';
         progressFilled.style.width = '0%';
         progressThumb.style.left = '0%';
         progressBuffered.style.width = '0%';
@@ -304,6 +334,13 @@
             progressBuffered.style.width = (buffEnd / videoPlayer.duration) * 100 + '%';
         }
     });
+
+    // 显示/隐藏加载指示器
+    videoPlayer.addEventListener('canplay', () => { loadingSpinner.style.display = 'none'; });
+    videoPlayer.addEventListener('playing', () => { loadingSpinner.style.display = 'none'; });
+    videoPlayer.addEventListener('waiting', () => { loadingSpinner.style.display = 'block'; });
+    videoPlayer.addEventListener('stalled', () => { loadingSpinner.style.display = 'block'; });
+    videoPlayer.addEventListener('error', () => { loadingSpinner.style.display = 'none'; });
 
     // 点击/拖拽进度条跳转（支持鼠标和触摸）
     let dragging = false;
